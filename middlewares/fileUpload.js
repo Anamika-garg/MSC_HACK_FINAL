@@ -25,6 +25,7 @@ cloudinary.config({
 
 // Middleware to Handle File Upload and Cloudinary Upload
 const uploadToCloudinary = (req, res, next) => {
+  console.log((req.body.Experience))
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded!" });
   }

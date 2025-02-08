@@ -1,26 +1,34 @@
-
 const jwt = require('jsonwebtoken');
 
-async function verifyToken(req,res,next) {
-    try{
-        const token = req.headers.authorization.split(' ')[1];
-        if(!token){
-            return res.status(400).json({
-                error : "Authorization Error, redirecting to Sign up"
-            })
+async function verifyToken(req, res, next) {
+    try {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader) {
+            return res.status(401).json({
+                error: "Authorization header missing, redirecting to Sign up"
+            });
         }
-        user = jwt.verify(token , process.env.JWT_SECRET);
+
+        const token = authHeader.split(' ')[1];
+
+        if (!token) {
+            return res.status(401).json({
+                error: "Token missing, redirecting to Sign up"
+            });
+        }
+
+        const user = jwt.verify(token, process.env.JWT_SECRET);
         req.user = user;
-        next()
-    }
-    catch(err){
+        next();
+    } catch (err) {
         console.log(err);
-        return res.status(400).json({
-            error : 'Authorization Error Occured!'
-        })
+        return res.status(401).json({
+            error: 'Authorization Error Occurred!'
+        });
     }
 }
 
 module.exports = {
     verifyToken
-}
+};

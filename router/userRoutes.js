@@ -9,7 +9,7 @@ router.post('/register' , registerUser);
 router.post('/userDetails' ,  verifyToken, upload.single('Avatar'), uploadToCloudinary,  userDetails);
 router.post('/login', login);
 router.post('/continueWithGoogle', continueWithGoogle);
-router.post('/profile', verifyToken, profile);
+router.get('/profile', verifyToken, profile);
 router.post('/moodJournal', verifyToken, moodJournal);
 
 
