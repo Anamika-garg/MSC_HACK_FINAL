@@ -6,6 +6,7 @@ const userRoutes = require('./router/userRoutes');
 const jobsRoutes = require('./router/jobsRoutes');
 const postRoutes = require('./router/postRoutes');
 const app = express();
+
 app.use(express.json())
 app.use(cors());
 app.use('/api/user', userRoutes)
