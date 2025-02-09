@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser , userDetails, login, continueWithGoogle , profile ,moodJournal, resumereview} = require('../controllers/userControllers');
+const { registerUser , userDetails, login, continueWithGoogle , profile ,moodJournal, resumereview , getJournals , getAuthor} = require('../controllers/userControllers');
 const { verifyToken } = require('../middlewares/verify');
 const { uploadToCloudinary, upload } = require('../middlewares/fileUpload');
 
@@ -12,6 +12,9 @@ router.post('/continueWithGoogle', continueWithGoogle);
 router.get('/profile', verifyToken, profile);
 router.post('/moodJournal', verifyToken, moodJournal);
 router.post('/resumereview', verifyToken, resumereview);
+router.post('/resumereview', verifyToken, resumereview);
+router.get('/getJournals', verifyToken, getJournals);
+router.get('/author/:id', getAuthor);
 
 
 module.exports = router;

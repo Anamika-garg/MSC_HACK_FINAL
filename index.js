@@ -4,11 +4,13 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 const userRoutes = require('./router/userRoutes');
 const jobsRoutes = require('./router/jobsRoutes');
+const postRoutes = require('./router/postRoutes');
 const app = express();
 app.use(express.json())
 app.use(cors());
 app.use('/api/user', userRoutes)
 app.use('/api/job', jobsRoutes)
+app.use('/api/post', postRoutes)
 
 app.get('/' , (req,res)=>{
     res.send("Hello,world")

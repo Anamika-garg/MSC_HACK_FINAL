@@ -83,6 +83,30 @@ const userSchema = mongoose.Schema({
 })
 
 
+
+const userJournalSchema = new mongoose.Schema({
+    authorId : {
+        type : mongoose.Types.ObjectId,
+        required : true,
+    },
+    moodText : {
+        type : String,
+        required : true,
+    },
+    moodEmoji : {
+        type : String,
+        required : true,
+    },
+    affirmations : [{
+        type : String
+    }],
+    createdAt : {
+        type: Date,
+        default : Date.now()
+    }
+})
+
+
 const User = new mongoose.model('User' , userSchema);
 module.exports = {
     User

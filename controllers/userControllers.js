@@ -3,8 +3,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const OpenAI = require("openai");
 const axios = require("axios");
-const { model } = require("mongoose");
+const { model, default: mongoose } = require("mongoose");
 const language = require("@google-cloud/language");
+const Journal = require("../models/Journal");
 
 // const completion = openai.chat.completions.create({
 //   model: "gpt-4o-mini",
@@ -324,79 +325,87 @@ async function profile(req, res, next) {
 //   }
 // }
 
-async function moodJournal(req, res, next) {
-  const { moodEmoji, moodText } = req.body;
 
-  // Example logic: generate affirmations based on mood
-  let affirmations = [];
-
-  switch (moodEmoji) {
-    case "😊":
-      affirmations = [
-        "Your happiness is contagious!",
-        "Keep smiling, you're doing great!",
-        "Today is a beautiful day because of you.",
-      ];
-      break;
-    case "😭":
-      affirmations = [
-        "It's okay to feel down sometimes. Better days are ahead.",
-        "Your strength is greater than your struggles.",
-        "You are loved, even on tough days.",
-      ];
-      break;
-    case "😡":
-      affirmations = [
-        "Take a deep breath. You are in control.",
-        "You have the power to turn frustration into motivation.",
-        "Your feelings are valid, but they don't define you.",
-      ];
-      break;
-    case "😐":
-      affirmations = [
-        "Even neutral days are part of your journey.",
-        "Small steps lead to big changes.",
-        "You are growing, even if you don't feel it right now.",
-      ];
-      break;
-    case "😪":
-      affirmations = [
-        "Rest is productive. You deserve it.",
-        "Your body and mind are recharging for greatness.",
-        "It's okay to pause. Tomorrow is a new day.",
-      ];
-      break;
-    default:
-      affirmations = [
-        "You are capable of achieving great things.",
-        "You choose to be positive and optimistic.",
-        "You are worthy of love and respect.",
-      ];
+async function getJournals(req,res,next) {
+  try{
+    const user = req.user;
+    const Journals = await Journal.find({userID : user.id});
+    return res.status(200).json({
+      success : 'success',
+      Journals
+    })
   }
+  catch (error) {
+    console.error(
+      "Gemini API Error:",
+      error.response ? error.response.data : error.message
+    );
+  
+}
+}
+async function moodJournal(req, res, next) {
 
-  res.json({ affirmations });
+  try {
+    const { moodEmoji, moodText } = req.body;
+    const apiKey = process.env.GEMINI_API;
+    const user = req.user;
+
+    const apiUrl =
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+
+    const requestData = {
+      contents: [
+        {
+          parts: [
+            {
+              text: `You are an empathetic and motivational coach specializing in emotional well-being. Based on the mood and journal entry provided, generate personalized affirmations to uplift the user. The affirmations should be positive, supportive, and tailored to their specific feelings.
+
+Mood Emoji: ${moodEmoji}
+Mood Text (Journal Entry): ${moodText}
+
+Analyze the sentiment of the journal entry and create 3-5 affirmations that will resonate with the user's emotional state. If the user is feeling down, offer comforting and encouraging affirmations. If they are happy, reinforce positivity and gratitude. Use simple, heartfelt language.
+
+Examples:
+
+For sadness (😭): “It’s okay to feel this way. Brighter days are ahead.”
+For happiness (😊): “Your joy is contagious. Keep shining!”
+For frustration (😡): “Take a deep breath. You have the strength to overcome any challenge.”
+Now, generate customized affirmations based on the provided mood and journal entry.
+give the response in array format only!! Like this ["It’s okay to feel this way. Brighter days are ahead.” , "It’s okay to feel this way. Brighter days are ahead.”]
+`,
+            },
+          ],
+        },
+      ],
+    };
+
+    const response = await axios.post(`${apiUrl}?key=${apiKey}`, requestData, {
+      headers: { "Content-Type": "application/json" }, // Fixed content type
+    });
+
+    const affirmations = response.data.candidates[0].content.parts[0].text;
+    // console.log("affirmations:", affirmations);
+
+    const newJournal = new Journal({
+      userID : user.id,
+      moodText,
+      moodEmoji,
+      affirmations : JSON.parse(affirmations)
+    })
+    newJournal.save();
+
+    return res.status(200).json({ affirmations }); // Send response back to client
+    // return res.send('ok')
+  } catch (error) {
+    console.error(
+      "Gemini API Error:",
+      error.response ? error.response.data : error.message
+    );
+    res.status(500).send("Failed to process the resume.");
+  }
 }
 
-// const openai = new OpenAIApi(new Configuration({
-//   apiKey: 'YOUR_OPENAI_API_KEY',
-// }));
 
-// async function resumereview(req,res,next){
-//   const { text } = req.body;
-
-//   try {
-//     const response = await openai.createCompletion({
-//       model: 'gpt-4',
-//       prompt: `You are an expert career advisor. Review the following resume and provide constructive feedback on how to improve it for ATS (Applicant Tracking Systems), structure, and readability:\n\n${text}`,
-//       max_tokens: 300,
-//     });
-
-//     res.json({ feedback: response.data.choices[0].text.trim() });
-//   } catch (error) {
-//     console.error('OpenAI API Error:', error);
-//     res.status(500).send('Failed to process the resume.');
-//   }
-// }
 
 async function resumereview(req, res, next) {
   try {
@@ -511,6 +520,28 @@ async function resumereview(req, res, next) {
   }
 }
 
+
+async function getAuthor(req,res,next) {
+  try{
+    const authorId = req.params;
+    console.log(authorId)
+    const author = await User.findById(authorId.id);
+    return res.status(200).json({
+      success  : 'success',
+      author
+    })
+  }
+  catch(err){
+    console.log(err);
+    return res.status(400).json({
+      error : "SOme Error Occured!",
+      err
+    })
+  }
+}
+
+
+
 module.exports = {
   registerUser,
   userDetails,
@@ -519,4 +550,6 @@ module.exports = {
   profile,
   moodJournal,
   resumereview,
+  getJournals,
+  getAuthor,
 };
