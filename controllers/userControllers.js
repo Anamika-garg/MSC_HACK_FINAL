@@ -540,7 +540,57 @@ async function getAuthor(req,res,next) {
   }
 }
 
+async function getCourses(req,res,next) {
+  try{
+    const {course} = req.body;
+    const response = await axios.get(`https://api.coursera.org/api/courses.v1?q=search&query=${course}`);
+    const courses = response.data.elements;
 
+    // return res.send(courses);
+    const coursesWithLinks = courses.map(course => ({
+      ...course,
+      link: `https://www.coursera.org/learn/${course.slug}`
+    }));
+    return res.status(200).json({
+      success : 'success',
+      courses : coursesWithLinks
+    });
+  }
+  catch(err){
+    console.log(err);
+    return res.status(400).json({
+      error : "Some Error Occured",
+      err
+    })
+  }
+}
+
+
+async function personalisedCourses(req,res,next) {
+  try{
+    const user = req.user;
+    const currentUser = await User.findById(user.id);
+    const response = await axios.get(`https://api.coursera.org/api/courses.v1?q=search&query=${currentUser.details?.profession || `Web Development`}`);
+    const courses = response.data.elements;
+
+    // return res.send(courses);
+    const coursesWithLinks = courses.map(course => ({
+      ...course,
+      link: `https://www.coursera.org/learn/${course.slug}`
+    }));
+    return res.status(200).json({
+      success : 'success',
+      courses : coursesWithLinks
+    });
+  }
+  catch(err){
+    console.log(err);
+    return res.status(400).json({
+      error : "Some Error Occured",
+      err
+    })
+  }
+}
 
 module.exports = {
   registerUser,
@@ -552,4 +602,6 @@ module.exports = {
   resumereview,
   getJournals,
   getAuthor,
+  getCourses,
+  personalisedCourses,
 };
