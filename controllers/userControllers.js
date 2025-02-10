@@ -207,9 +207,11 @@ async function continueWithGoogle(req, res, next) {
     });
   }
   try {
-    const emailExists = await User.findOne({ email });
+    let method = 'login';
+    const emailExists = await User.findOne({ email : email.toLowerCase() });
 
     if (!emailExists) {
+      method = 'signup'
       const newUser = new User({
         email,
         fullName,
@@ -234,6 +236,7 @@ async function continueWithGoogle(req, res, next) {
         success: "Success",
         user: newUser,
         token,
+        method,
       });
     } else {
       const payload = {
@@ -249,6 +252,7 @@ async function continueWithGoogle(req, res, next) {
         success: "Success",
         user: emailExists,
         token,
+        method,
       });
     }
   } catch (err) {
@@ -592,6 +596,12 @@ async function personalisedCourses(req,res,next) {
   }
 }
 
+
+async function editProfile(req,res,next) {
+  
+}
+
+
 module.exports = {
   registerUser,
   userDetails,
@@ -604,4 +614,5 @@ module.exports = {
   getAuthor,
   getCourses,
   personalisedCourses,
+  editProfile,
 };

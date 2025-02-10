@@ -55,21 +55,20 @@ const { response } = require("express");
 
 async function getJobs(req, res, next) {
   try {
-  //   const {jobTitle, location} = req.body
-  //   const response = await axios.get(`${process.env.JOBS_URL}`, {
-  //     params: {
-  //       title_filter: `${jobTitle}`,
-  //       location_filter: `${location}`,
-  //     },
-  //     headers: {
-  //       "x-rapidapi-key": process.env.JOBS_API,
-  //       "x-rapidapi-host": process.env.JOBS_HOST,
-  //     },
-  //   });
-  //   console.log(response);
-  //   return res.status(200).json({
-  //     data : response.data
-  // })
+//     const {jobTitle, location} = req.body
+//     const response = await axios.get(`${process.env.JOBS_URL}`, {
+//       params: {
+//         title_filter: `${jobTitle}`,
+//         location_filter: `${location}`,
+//       },
+//       headers: {
+//         "x-rapidapi-key": process.env.JOBS_API,
+//         "x-rapidapi-host": process.env.JOBS_HOST,
+//       },
+//     });
+//     return res.status(200).json({
+//       data : response.data
+//   })
     return res.status(200).json({
         "data": [
             {
@@ -489,7 +488,6 @@ async function jobsInterestedIn(req,res,next) {
     //     "x-rapidapi-host": process.env.JOBS_HOST,
     //   },
     // });
-    // console.log(response);
     // return res.status(200).json({
     //   data : response.data
     // })

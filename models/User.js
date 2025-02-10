@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const experienceSchema = new mongoose.Schema({
     
-    position: { type: String, required: true },   
-    company: { type: String, required: true },          
-    startDate: { type: Date, required: true },      
+    position: { type: String },   
+    company: { type: String },          
+    startDate: { type: Date},      
     endDate: { type: Date },                         
     description: { type: String },                  
     currentlyWorking: { type: Boolean, default: false } 
@@ -13,7 +13,7 @@ const experienceSchema = new mongoose.Schema({
 const educationSchema = new mongoose.Schema({
     course: { type: String, required: true },   
     college: { type: String, required: true },      
-    startDate: { type: Date, required: true },      
+    startDate: { type: Date },      
     endDate: { type: Date },
 });
 
@@ -25,26 +25,21 @@ const locationSchema = new mongoose.Schema({
 const userDetailsSchema = new mongoose.Schema({
     userID : {
         type : mongoose.Types.ObjectId,
-        required :  true,
     },
     photoURL : {
         type : String,
-        required : true,
     },
     Skills : {
         type : Array,
-        required : true,
     },
     Experience : [experienceSchema],
     Education : [educationSchema],
 
     Bio : {
         type : String,
-        required : true
     },
     Phone : {
         type : Number,
-        required : true,
     },
     location : [locationSchema],
     profession : {
