@@ -207,11 +207,11 @@ async function continueWithGoogle(req, res, next) {
     });
   }
   try {
-    let method = 'login';
-    const emailExists = await User.findOne({ email : email.toLowerCase() });
+    let method = "login";
+    const emailExists = await User.findOne({ email: email.toLowerCase() });
 
     if (!emailExists) {
-      method = 'signup'
+      method = "signup";
       const newUser = new User({
         email,
         fullName,
@@ -329,26 +329,22 @@ async function profile(req, res, next) {
 //   }
 // }
 
-
-async function getJournals(req,res,next) {
-  try{
+async function getJournals(req, res, next) {
+  try {
     const user = req.user;
-    const Journals = await Journal.find({userID : user.id});
+    const Journals = await Journal.find({ userID: user.id });
     return res.status(200).json({
-      success : 'success',
-      Journals
-    })
-  }
-  catch (error) {
+      success: "success",
+      Journals,
+    });
+  } catch (error) {
     console.error(
       "Gemini API Error:",
       error.response ? error.response.data : error.message
     );
-  
-}
+  }
 }
 async function moodJournal(req, res, next) {
-
   try {
     const { moodEmoji, moodText } = req.body;
     const apiKey = process.env.GEMINI_API;
@@ -391,11 +387,11 @@ give the response in array format only!! Like this ["It’s okay to feel this wa
     // console.log("affirmations:", affirmations);
 
     const newJournal = new Journal({
-      userID : user.id,
+      userID: user.id,
       moodText,
       moodEmoji,
-      affirmations : JSON.parse(affirmations)
-    })
+      affirmations: JSON.parse(affirmations),
+    });
     newJournal.save();
 
     return res.status(200).json({ affirmations }); // Send response back to client
@@ -409,8 +405,6 @@ give the response in array format only!! Like this ["It’s okay to feel this wa
   }
 }
 
-
-
 async function resumereview(req, res, next) {
   try {
     const { text } = req.body;
@@ -421,11 +415,34 @@ async function resumereview(req, res, next) {
 
     // console.log(text)
     let formattedText = text
-      .replace(/(Education|EDUCATION)/g, "\n\n[Education]\n")
-      .replace(/(Experience|EXPERIENCE|Work History)/g, "\n\n[Experience]\n")
-      .replace(/(Skills|SKILLS|Technical Skills)/g, "\n\n[Skills]\n")
-      .replace(/(Projects|PROJECTS)/g, "\n\n[Projects]\n")
-      .replace(/(Certifications|CERTIFICATIONS)/g, "\n\n[Certifications]\n");
+      .replace(
+        /(Education|Work History|Experience|Professional Experience|Internships)/gi,
+        "\n\n[Experience]\n"
+      )
+      .replace(
+        /(Education|Academic Background|Academic Qualifications|EDUCATION)/gi,
+        "\n\n[Education]\n"
+      )
+      .replace(
+        /(Skills|Technical Skills|Core Competencies|Areas of Expertise)/gi,
+        "\n\n[Skills]\n"
+      )
+      .replace(
+        /(Projects|Personal Projects|PROJECTS|Portfolio)/gi,
+        "\n\n[Projects]\n"
+      )
+      .replace(
+        /(Certifications|Licenses|CERTIFICATIONS|Courses|Accreditations)/gi,
+        "\n\n[Certifications]\n"
+      )
+      .replace(/(Awards|Honors|Achievements|Recognitions)/gi, "\n\n[Awards]\n")
+      .replace(
+        /(Volunteer Work|Volunteering|Community Service)/gi,
+        "\n\n[Volunteer Work]\n"
+      )
+      .replace(/(Publications|Research|Papers)/gi, "\n\n[Publications]\n")
+      .replace(/(Languages|Language Proficiency)/gi, "\n\n[Languages]\n")
+      .replace(/(References|Referees)/gi, "\n\n[References]\n");
 
     console.log(formattedText);
 
@@ -436,62 +453,97 @@ async function resumereview(req, res, next) {
             {
               text: `
               You are being provided with the text extracted from a resume. Analyze it thoroughly and provide an ATS (Applicant Tracking System) score out of 100 based on the following criteria:
-              1. Use of relevant keywords
-              2. Grammar and language quality
-              3. Overall structure and formatting (ignore visual formatting but consider logical structure)
-              
-              Return the results in JSON format with the following structure:
+              ### Evaluation Criteria:
+1. **Use of Relevant Keywords**:
+   - Check for industry-specific and role-specific keywords aligned with common job descriptions in the field.
+   - Ensure the use of action verbs (e.g., "developed," "managed," "implemented").
+   - Look for quantifiable achievements (e.g., "increased sales by 20%," "reduced processing time by 15%").
+
+2. **Grammar and Language Quality**:
+   - Identify grammatical errors, spelling mistakes, and inconsistent tenses.
+   - Ensure the use of clear, concise, and professional language.
+   - Check for passive voice overuse and suggest more active sentence structures.
+
+3. **Logical Structure and Formatting**:
+   - Assess if the resume follows a logical order: Contact Info → Summary (if present) → Skills → Experience → Education → Projects → Certifications.
+   - Verify consistent formatting in bullet points, dates, and section headings.
+   - Ensure the use of bullet points for listing responsibilities and achievements.
               {
   "ATS_Score": number,
   "Sections": {
     "Education": {
       "Score": number,
       "Suggestions": [
-        "specific suggestion 1 for Education",
-        "specific suggestion 2 for Education",
-        "specific suggestion 3 for Education"
+        "Include relevant coursework or academic achievements to highlight expertise.",
+        "Ensure consistency in formatting degree names, institutions, and graduation dates.",
+        "Add GPA if it’s above 3.0 and relevant to the job you’re applying for."
       ]
     },
     "Experience": {
       "Score": number,
       "Suggestions": [
-        "specific suggestion 1 for Experience",
-        "specific suggestion 2 for Experience",
-        "specific suggestion 3 for Experience"
+        "Quantify achievements using metrics (e.g., 'increased sales by 20%').",
+        "Use strong action verbs to describe responsibilities (e.g., 'Led', 'Developed').",
+        "Include job titles, company names, and clear date ranges for each role."
       ]
     },
     "Skills": {
       "Score": number,
       "Suggestions": [
-        "specific suggestion 1 for Skills",
-        "specific suggestion 2 for Skills",
-        "specific suggestion 3 for Skills"
+        "Include industry-specific keywords from the job description.",
+        "Separate technical and soft skills for clarity.",
+        "Avoid generic skills unless they are highly relevant (e.g., 'Microsoft Office')."
       ]
     },
     "Projects": {
       "Score": number,
       "Suggestions": [
-        "specific suggestion 1 for Projects",
-        "specific suggestion 2 for Projects",
-        "specific suggestion 3 for Projects"
+        "Highlight outcomes or impact of each project, not just tasks performed.",
+        "Include technologies used and any cross-functional collaboration.",
+        "Organize projects in reverse chronological order or by relevance."
       ]
     },
     "Certifications": {
       "Score": number,
       "Suggestions": [
-        "specific suggestion 1 for Certifications",
-        "specific suggestion 2 for Certifications",
-        "specific suggestion 3 for Certifications"
+        "Ensure certification names and issuing organizations are accurate.",
+        "Include expiration dates if applicable.",
+        "Add certifications that align closely with the desired job role."
+      ]
+    },
+    "Volunteer Work": {
+      "Score": number,
+      "Suggestions": [
+        "Highlight leadership roles or skills transferable to the target job.",
+        "Include the organization name, your role, and time period.",
+        "Focus on measurable impact or outcomes from volunteer activities."
+      ]
+    },
+    "Languages": {
+      "Score": number,
+      "Suggestions": [
+        "Indicate proficiency level (e.g., 'Fluent', 'Intermediate').",
+        "Include certifications if available (e.g., TOEFL, DELF).",
+        "Only list languages relevant to the job or geographic area."
+      ]
+    },
+    "Awards": {
+      "Score": number,
+      "Suggestions": [
+        "Include the awarding body and date received.",
+        "Describe the context or criteria for winning the award.",
+        "List awards that demonstrate leadership, excellence, or relevant achievements."
       ]
     }
   },
   "Overall_Suggestions": [
-    "overall suggestion 1 to improve the resume",
-    "overall suggestion 2 to improve the resume",
-    "overall suggestion 3 to improve the resume",
-    "overall suggestion 4 to improve the resume"
+    "Tailor your resume for each job by incorporating keywords from the job description.",
+    "Use consistent formatting (e.g., font sizes, bullet points, alignment).",
+    "Ensure there are no spelling or grammatical errors to maintain professionalism.",
+    "Limit the resume to one or two pages, focusing on relevant experience."
   ]
 }
+
               }
               
               Here is the resume text:
@@ -524,83 +576,80 @@ async function resumereview(req, res, next) {
   }
 }
 
-
-async function getAuthor(req,res,next) {
-  try{
+async function getAuthor(req, res, next) {
+  try {
     const authorId = req.params;
-    console.log(authorId)
+    console.log(authorId);
     const author = await User.findById(authorId.id);
     return res.status(200).json({
-      success  : 'success',
-      author
-    })
-  }
-  catch(err){
+      success: "success",
+      author,
+    });
+  } catch (err) {
     console.log(err);
     return res.status(400).json({
-      error : "SOme Error Occured!",
-      err
-    })
+      error: "SOme Error Occured!",
+      err,
+    });
   }
 }
 
-async function getCourses(req,res,next) {
-  try{
-    const {course} = req.body;
-    const response = await axios.get(`https://api.coursera.org/api/courses.v1?q=search&query=${course}`);
+async function getCourses(req, res, next) {
+  try {
+    const { course } = req.body;
+    const response = await axios.get(
+      `https://api.coursera.org/api/courses.v1?q=search&query=${course}`
+    );
     const courses = response.data.elements;
 
     // return res.send(courses);
-    const coursesWithLinks = courses.map(course => ({
+    const coursesWithLinks = courses.map((course) => ({
       ...course,
-      link: `https://www.coursera.org/learn/${course.slug}`
+      link: `https://www.coursera.org/learn/${course.slug}`,
     }));
     return res.status(200).json({
-      success : 'success',
-      courses : coursesWithLinks
+      success: "success",
+      courses: coursesWithLinks,
     });
-  }
-  catch(err){
+  } catch (err) {
     console.log(err);
     return res.status(400).json({
-      error : "Some Error Occured",
-      err
-    })
+      error: "Some Error Occured",
+      err,
+    });
   }
 }
 
-
-async function personalisedCourses(req,res,next) {
-  try{
+async function personalisedCourses(req, res, next) {
+  try {
     const user = req.user;
     const currentUser = await User.findById(user.id);
-    const response = await axios.get(`https://api.coursera.org/api/courses.v1?q=search&query=${currentUser.details?.profession || `Web Development`}`);
+    const response = await axios.get(
+      `https://api.coursera.org/api/courses.v1?q=search&query=${
+        currentUser.details?.profession || `Web Development`
+      }`
+    );
     const courses = response.data.elements;
 
     // return res.send(courses);
-    const coursesWithLinks = courses.map(course => ({
+    const coursesWithLinks = courses.map((course) => ({
       ...course,
-      link: `https://www.coursera.org/learn/${course.slug}`
+      link: `https://www.coursera.org/learn/${course.slug}`,
     }));
     return res.status(200).json({
-      success : 'success',
-      courses : coursesWithLinks
+      success: "success",
+      courses: coursesWithLinks,
     });
-  }
-  catch(err){
+  } catch (err) {
     console.log(err);
     return res.status(400).json({
-      error : "Some Error Occured",
-      err
-    })
+      error: "Some Error Occured",
+      err,
+    });
   }
 }
 
-
-async function editProfile(req,res,next) {
-  
-}
-
+async function editProfile(req, res, next) {}
 
 module.exports = {
   registerUser,
