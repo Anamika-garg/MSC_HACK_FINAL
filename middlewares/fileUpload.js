@@ -27,7 +27,7 @@ cloudinary.config({
 const uploadToCloudinary = (req, res, next) => {
   console.log((req.body.Experience))
   if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded!" });
+    return res.status(400).json({ error: "Please upload your Profile Photo" });
   }
 
   // Log the Cloudinary URL (it could be in secure_url or path)

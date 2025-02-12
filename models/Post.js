@@ -7,6 +7,14 @@ const commentSchema = new mongoose.Schema({
         required : true,
         ref : User
     },
+    authorName : {
+        type : String,
+        required : true,
+    },
+    authorPfp : {
+        type : String,
+        required : true,
+    },
     comment : {
         type : String,
         required : true

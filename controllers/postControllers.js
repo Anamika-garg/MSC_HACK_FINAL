@@ -1,9 +1,9 @@
-const { Post } = require("../models/Post");
+const { Post, Comment } = require("../models/Post");
 const { User } = require("../models/User");
 
 async function getPosts(req, res, next) {
   try {
-    const Posts = await Post.find();
+    const Posts = await Post.find().sort({createdAt : -1});
 
     return res.status(201).json({
       success: "Post fetched Successful",
@@ -48,13 +48,16 @@ async function createPost(req, res, next) {
 
 async function addComment(req, res, next) {
   try {
-    const user = req.body;
+    const user = req.user;
+    const getAuthor = await User.findById(user.id);
     const { comment, postId } = req.body;
 
     const newComment = new Comment({
       comment,
       authorId: user.id,
       postId,
+      authorName : getAuthor.fullName,
+      authorPfp : getAuthor.details.photoURL
     });
 
     const post = await Post.findByIdAndUpdate(
